@@ -18,6 +18,19 @@ import java.util.Map;
 @Slf4j
 public class DefaultExceptionHandler {
 
+    @ExceptionHandler(EncryptionException.class)
+    public ResponseEntity<ApiError> handleException(EncryptionException e, HttpServletRequest request) {
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        e.getMessage(),
+                        HttpStatus.INTERNAL_SERVER_ERROR.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.INTERNAL_SERVER_ERROR
+        );
+    }
+
     @ExceptionHandler(NotAllowedException.class)
     public ResponseEntity<ApiError> handleException(NotAllowedException e, HttpServletRequest request) {
         return new ResponseEntity<>(

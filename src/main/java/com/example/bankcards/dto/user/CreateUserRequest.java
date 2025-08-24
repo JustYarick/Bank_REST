@@ -14,27 +14,27 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class CreateUserRequest {
 
-    @NotBlank(message = "Username обязателен")
-    @Size(max = 50, message = "Username не может превышать 50 символов")
+    @NotBlank(message = "Username is required")
+    @Size(max = 50, message = "Username must not exceed 50 characters")
     private String username;
 
-    @NotBlank(message = "Email обязателен")
-    @Email(message = "Некорректный email")
-    @Size(max = 100, message = "Email не может превышать 100 символов")
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
 
-    @NotBlank(message = "Пароль обязателен")
-    @Size(min = 6, message = "Пароль должен содержать минимум 6 символов")
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters long")
     private String password;
 
-    @NotBlank(message = "Имя обязательно")
-    @Size(max = 50, message = "Имя не может превышать 50 символов")
+    @NotBlank(message = "First name is required")
+    @Size(max = 50, message = "First name must not exceed 50 characters")
     private String firstName;
 
-    @NotBlank(message = "Фамилия обязательна")
-    @Size(max = 50, message = "Фамилия не может превышать 50 символов")
+    @NotBlank(message = "Last name is required")
+    @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
-    @NotNull(message = "Роль обязательна")
+    @NotNull(message = "Role is required")
     private UserRole role;
 }

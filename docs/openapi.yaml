@@ -1,1 +1,490 @@
-# Здесь будет OpenAPI описание всех доступных эндпоинтов и моделей данных.
+openapi: "3.0.2"
+info:
+  title: Bank Cards API
+  version: "1.0.0"
+  description: |
+    REST-API для управления банковскими картами, пользователями и транзакциями.
+servers:
+  - url: http://localhost:8080
+
+tags:
+  - name: Authentication
+    description: Аутентификация и регистрация
+  - name: Cards
+    description: Управление банковскими картами
+  - name: Users
+    description: Управление пользователями
+  - name: Requests
+    description: Создание внутренних заявок
+  - name: Transactions
+    description: Денежные переводы
+  - name: Health
+    description: Проверка доступности сервиса
+
+paths:
+
+  /api/v1/auth/login:
+    post:
+      tags: [ Authentication ]
+      summary: User login
+      description: Authenticate user and return JWT token
+      operationId: login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginRequest' }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        "401":
+          description: Неверные учётные данные
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/v1/auth/register:
+    post:
+      tags: [ Authentication ]
+      summary: User registration
+      description: Register a new user account
+      operationId: register
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RegisterRequest' }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AuthResponse' }
+        "409":
+          description: Пользователь уже существует
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  /api/v1/card:
+    get:
+      tags: [ Cards ]
+      summary: Get all cards
+      description: Админ получает список карт c фильтрацией и пагинацией
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - { name: search, in: query, schema: { type: string }, description: Поиск по имени держателя или маске }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/CardStatus' } }
+        - { name: minBalance, in: query, schema: { type: number, format: decimal } }
+        - { name: maxBalance, in: query, schema: { type: number, format: decimal } }
+        - $ref: '#/components/parameters/CreatedAfter'
+        - $ref: '#/components/parameters/CreatedBefore'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedCardResponse' }
+    post:
+      tags: [ Cards ]
+      summary: Create card
+      description: Создание новой карты
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateCardRequest' }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CreateCardResponse' }
+
+  /api/v1/card/{cardId}:
+    get:
+      tags: [ Cards ]
+      summary: Get card by ID
+      parameters:
+        - $ref: '#/components/parameters/CardId'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CardResponse' }
+    delete:
+      tags: [ Cards ]
+      summary: Delete card
+      parameters: [ $ref: '#/components/parameters/CardId' ]
+      responses:
+        "200": { description: Deleted }
+
+  /api/v1/card/{cardId}/block:
+    patch:
+      tags: [ Cards ]
+      summary: Block card
+      parameters: [ $ref: '#/components/parameters/CardId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CardResponse' }
+
+  /api/v1/card/{cardId}/unblock:
+    patch:
+      tags: [ Cards ]
+      summary: Unblock card
+      parameters: [ $ref: '#/components/parameters/CardId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CardResponse' }
+
+  /api/v1/card/{cardId}/activate:
+    patch:
+      tags: [ Cards ]
+      summary: Activate card
+      parameters: [ $ref: '#/components/parameters/CardId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/CardResponse' }
+
+  /api/v1/card/my:
+    get:
+      tags: [ Cards ]
+      summary: Get my cards
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - { name: search, in: query, schema: { type: string } }
+        - { name: status, in: query, schema: { $ref: '#/components/schemas/CardStatus' } }
+        - { name: minBalance, in: query, schema: { type: number, format: decimal } }
+        - { name: maxBalance, in: query, schema: { type: number, format: decimal } }
+        - $ref: '#/components/parameters/CreatedAfter'
+        - $ref: '#/components/parameters/CreatedBefore'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedCardResponse' }
+
+  /api/v1/users:
+    get:
+      tags: [ Users ]
+      summary: Get all users
+      parameters:
+        - $ref: '#/components/parameters/Page'
+        - $ref: '#/components/parameters/Size'
+        - { name: search, in: query, schema: { type: string } }
+        - { name: role, in: query, schema: { $ref: '#/components/schemas/UserRole' } }
+        - { name: active, in: query, schema: { type: boolean } }
+        - $ref: '#/components/parameters/CreatedAfter'
+        - $ref: '#/components/parameters/CreatedBefore'
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagedUserResponse' }
+    post:
+      tags: [ Users ]
+      summary: Create user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateUserRequest' }
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+
+  /api/v1/users/{id}:
+    get:
+      tags: [ Users ]
+      summary: Get user by ID
+      parameters: [ $ref: '#/components/parameters/UserId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+    put:
+      tags: [ Users ]
+      summary: Update user
+      parameters: [ $ref: '#/components/parameters/UserId' ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUserRequest' }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+    delete:
+      tags: [ Users ]
+      summary: Delete user
+      parameters: [ $ref: '#/components/parameters/UserId' ]
+      responses:
+        "200": { description: Deleted }
+
+  /api/v1/users/{id}/activate:
+    patch:
+      tags: [ Users ]
+      summary: Activate user
+      parameters: [ $ref: '#/components/parameters/UserId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+
+  /api/v1/users/{id}/deactivate:
+    patch:
+      tags: [ Users ]
+      summary: Deactivate user
+      parameters: [ $ref: '#/components/parameters/UserId' ]
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+
+  /request/card_block:
+    post:
+      tags: [ Requests ]
+      summary: Create card-block request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CardBlockRequest' }
+      responses:
+        "200": { description: OK }
+
+  /transactions:
+    post:
+      tags: [ Transactions ]
+      summary: Create transfer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CreateTransferRequest' }
+      responses:
+        "200": { description: OK }
+
+  /ping:
+    get:
+      tags: [ Health ]
+      summary: Ping
+      responses:
+        "200":
+          description: Pong
+          content:
+            text/plain:
+              schema: { type: string, example: pong }
+
+components:
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema: { type: integer, minimum: 0, default: 0 }
+      description: Номер страницы
+    Size:
+      name: size
+      in: query
+      schema: { type: integer, minimum: 1, default: 10 }
+      description: Размер страницы
+    CreatedAfter:
+      name: createdAfter
+      in: query
+      schema: { type: string, format: date-time }
+      description: Дата создания от
+    CreatedBefore:
+      name: createdBefore
+      in: query
+      schema: { type: string, format: date-time }
+      description: Дата создания до
+    CardId:
+      name: cardId
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+      description: UUID карты
+    UserId:
+      name: id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+      description: UUID пользователя
+
+  schemas:
+    # --- Auth ---
+    LoginRequest:
+      type: object
+      required: [ username, password ]
+      properties:
+        username: { type: string }
+        password: { type: string, format: password }
+    RegisterRequest:
+      allOf:
+        - $ref: '#/components/schemas/LoginRequest'
+        - type: object
+          required: [ email, firstName, lastName ]
+          properties:
+            email: { type: string, format: email }
+            firstName: { type: string }
+            lastName: { type: string }
+            role: { $ref: '#/components/schemas/UserRole' }
+    AuthResponse:
+      type: object
+      properties:
+        token: { type: string }
+        refreshToken: { type: string }
+        tokenType: { type: string, example: Bearer }
+        expiresIn: { type: integer }
+        user: { $ref: '#/components/schemas/UserResponse' }
+
+    # --- Cards ---
+    CardStatus:
+      type: string
+      enum: [ ACTIVE, BLOCKED, EXPIRED ]
+    CreateCardRequest:
+      type: object
+      required: [ cardUserUuid, holderName, currencyCode, initialBalance ]
+      properties:
+        cardUserUuid: { type: string, format: uuid }
+        holderName: { type: string }
+        currencyCode: { type: string, example: RUB }
+        initialBalance: { type: number, format: decimal }
+    CreateCardResponse:
+      type: object
+      properties:
+        card: { $ref: '#/components/schemas/CardResponse' }
+        plainCardNumber: { type: string, example: "4277010011223344" }
+    CardResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        cardNumberMask: { type: string, example: "**** **** **** 3344" }
+        holderName: { type: string }
+        balance: { type: number, format: decimal }
+        status: { $ref: '#/components/schemas/CardStatus' }
+        currencyCode: { type: string }
+        expirationDate: { type: string, format: date }
+        createdAt: { type: string, format: date-time }
+    PagedCardResponse:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/CardResponse' }
+        page: { type: integer }
+        size: { type: integer }
+        totalElements: { type: integer }
+        totalPages: { type: integer }
+        first: { type: boolean }
+        last: { type: boolean }
+
+    # --- Users ---
+    UserRole:
+      type: string
+      enum: [ USER, ADMIN ]
+    CreateUserRequest:
+      type: object
+      required: [ username, email, password, firstName, lastName, role ]
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+        password: { type: string, format: password }
+        firstName: { type: string }
+        lastName: { type: string }
+        role: { $ref: '#/components/schemas/UserRole' }
+    UpdateUserRequest:
+      type: object
+      properties:
+        username: { type: string }
+        email: { type: string, format: email }
+        firstName: { type: string }
+        lastName: { type: string }
+        role: { $ref: '#/components/schemas/UserRole' }
+    UserResponse:
+      type: object
+      properties:
+        id: { type: string, format: uuid }
+        username: { type: string }
+        email: { type: string, format: email }
+        firstName: { type: string }
+        lastName: { type: string }
+        role: { $ref: '#/components/schemas/UserRole' }
+        isActive: { type: boolean }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    PagedUserResponse:
+      allOf:
+        - $ref: '#/components/schemas/PagedCardResponse'
+        - type: object
+          properties:
+            content:
+              type: array
+              items: { $ref: '#/components/schemas/UserResponse' }
+
+    # --- Requests ---
+    CardBlockRequest:
+      type: object
+      required: [ cardId, reason ]
+      properties:
+        cardId: { type: string, format: uuid }
+        reason: { type: string }
+
+    # --- Transactions ---
+    CreateTransferRequest:
+      type: object
+      required: [ fromCardId, toCardId, amount ]
+      properties:
+        fromCardId: { type: string, format: uuid }
+        toCardId: { type: string, format: uuid }
+        amount: { type: number, format: decimal }
+
+    # --- Common ---
+    ErrorResponse:
+      type: object
+      properties:
+        timestamp: { type: string, format: date-time }
+        status: { type: integer }
+        error: { type: string }
+        message: { type: string }
+        details:
+          type: object
+          additionalProperties: { type: string }
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: [ ]
+

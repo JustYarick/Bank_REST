@@ -21,7 +21,7 @@ public class TransactionsController {
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'USER')")
-    public ResponseEntity<Void> createCard(
+    public ResponseEntity<Void> createTransaction(
             @RequestBody CreateTransferRequest request,
             @AuthenticationPrincipal UserPrincipal userPrincipal){
 

@@ -1,5 +1,6 @@
 package com.example.bankcards.util;
 
+import com.example.bankcards.exception.EncryptionException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,7 @@ public class CardEncryption {
             return Base64.getEncoder().encodeToString(encrypted);
         } catch (Exception e) {
             log.error("Error encrypting card number", e);
-            throw new RuntimeException("Failed to encrypt card number", e);
+            throw new EncryptionException("Failed to encrypt card number", e);
         }
     }
 }

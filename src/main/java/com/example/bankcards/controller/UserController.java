@@ -74,7 +74,7 @@ public class UserController {
 
     @PutMapping("/{id}")
     @Operation(summary = "Обновить пользователя", description = "Обновление данных пользователя")
-    @PreAuthorize("hasRole('ADMIN') or @userSecurityService.isCurrentUser(authentication, #id)")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UserResponse> updateUser(
             @Parameter(description = "ID пользователя")
             @PathVariable UUID id,

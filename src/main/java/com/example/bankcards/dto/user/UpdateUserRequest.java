@@ -12,17 +12,17 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UpdateUserRequest {
 
-    @Size(max = 50, message = "Username не может превышать 50 символов")
+    @Size(max = 50, message = "Username must not exceed 50 characters")
     private String username;
 
-    @Email(message = "Некорректный email")
-    @Size(max = 100, message = "Email не может превышать 100 символов")
+    @Email(message = "Invalid email format")
+    @Size(max = 100, message = "Email must not exceed 100 characters")
     private String email;
 
-    @Size(max = 50, message = "Имя не может превышать 50 символов")
+    @Size(max = 50, message = "First name must not exceed 50 characters")
     private String firstName;
 
-    @Size(max = 50, message = "Фамилия не может превышать 50 символов")
+    @Size(max = 50, message = "Last name must not exceed 50 characters")
     private String lastName;
 
     private UserRole role;
