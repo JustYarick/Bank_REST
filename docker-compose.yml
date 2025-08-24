@@ -1,9 +1,32 @@
-# 
-# docker-compose.yml — определяет сервисы для разработки и тестирования.
+services:
+  pgadmin:
+    image: dpage/pgadmin4:8.6
+    container_name: bank_card_pgadmin
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - postgres
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
-Что нужно сделать:
-  - Настроить сервисы для:
-      - PostgreSQL (или MySQL) с начальной базой.
-      - Приложения Spring Boot (если нужно).
-  - Открыть нужные порты (например, 5432, 8080).
-  - Настроить volume для хранения данных БД.
+  postgres:
+    image: postgres:16.4
+    container_name: bank_card_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: bank_cards
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+
+volumes:
+  postgres_data:
+  pgadmin_data:

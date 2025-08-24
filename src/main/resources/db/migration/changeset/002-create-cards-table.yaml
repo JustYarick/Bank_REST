@@ -1,0 +1,81 @@
+databaseChangeLog:
+  - changeSet:
+      id: 002-create-card-status-enum
+      author: yaroslav.davkov
+      changes:
+        - sql:
+            sql: CREATE TYPE card_status_enum AS ENUM ('ACTIVE', 'BLOCKED', 'EXPIRED');
+      rollback:
+        - sql:
+            sql: DROP TYPE IF EXISTS card_status_enum;
+
+  - changeSet:
+      id: 002-create-cards-table
+      author: yaroslav.davkov
+      changes:
+        - createTable:
+            tableName: cards
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  defaultValueComputed: gen_random_uuid()
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: card_number_encrypted
+                  type: VARCHAR(255)
+                  constraints:
+                    nullable: false
+                    unique: true
+              - column:
+                  name: card_number_mask
+                  type: VARCHAR(19)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: holder_name
+                  type: VARCHAR(100)
+                  constraints:
+                    nullable: false
+              - column:
+                  name: expiration_date
+                  type: DATE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: card_status_enum
+                  defaultValue: ACTIVE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: balance
+                  type: DECIMAL(15,2)
+                  defaultValueNumeric: 0.00
+                  constraints:
+                    nullable: false
+              - column:
+                  name: currency_code
+                  type: VARCHAR(3)
+                  defaultValue: 'RUB'
+                  constraints:
+                    nullable: false
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP WITH TIME ZONE
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false

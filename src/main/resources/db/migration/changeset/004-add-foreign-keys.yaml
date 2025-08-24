@@ -1,0 +1,33 @@
+databaseChangeLog:
+  - changeSet:
+      id: 004-add-foreign-keys
+      author: yaroslav.davkov
+      changes:
+        - addForeignKeyConstraint:
+            baseTableName: cards
+            baseColumnNames: user_id
+            constraintName: fk_cards_user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: transactions
+            baseColumnNames: from_card_id
+            constraintName: fk_transactions_from_card
+            referencedTableName: cards
+            referencedColumnNames: id
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: transactions
+            baseColumnNames: to_card_id
+            constraintName: fk_transactions_to_card
+            referencedTableName: cards
+            referencedColumnNames: id
+            onDelete: RESTRICT
+        - addForeignKeyConstraint:
+            baseTableName: transactions
+            baseColumnNames: created_by
+            constraintName: fk_transactions_created_by
+            referencedTableName: users
+            referencedColumnNames: id
+            onDelete: RESTRICT
