@@ -5,6 +5,7 @@ import com.example.bankcards.dto.card.CreateCardRequest;
 import com.example.bankcards.dto.card.CreateCardResponse;
 import com.example.bankcards.dto.core.PagedResponse;
 import com.example.bankcards.entity.CardStatus;
+import com.example.bankcards.security.UserPrincipal;
 import org.springframework.data.domain.Pageable;
 
 import java.math.BigDecimal;
@@ -40,4 +41,5 @@ public interface CardService {
             LocalDateTime createdBefore
     );
 
+    CardResponse getCardByIdIfHaveAccess(UUID cardId, UserPrincipal user);
 }

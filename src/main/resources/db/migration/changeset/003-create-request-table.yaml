@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 003-create-request-status-enum
+      author: yaroslav.davkov
+      changes:
+        - sql:
+            sql: CREATE TYPE request_status_enum AS ENUM ('OPEN', 'CLOSED', 'NEW');
+      rollback:
+        - sql:
+            sql: DROP TYPE IF EXISTS request_status_enum;
+
+  - changeSet:
+      id: 004-create-request-table
+      author: yaroslav.davkov
+      changes:
+        - createTable:
+            tableName: requests
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: card_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: status
+                  type: request_status_enum
+                  constraints:
+                    nullable: false
+              - column:
+                  name: reason
+                  type: varchar(255)
+              - column:
+                  name: created_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: timestamp
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false

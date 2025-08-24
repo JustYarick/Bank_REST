@@ -9,7 +9,6 @@ import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.exception.AlreadyTakenException;
 import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.UserRepository;
-import com.example.bankcards.service.interfaces.UserService;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.*;
@@ -23,12 +22,11 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl implements com.example.bankcards.service.interfaces.UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -36,111 +34,75 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserResponse getUserById(UUID id) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + id));
-        return mapToUserResponse(user);
+                .orElseThrow(() -> new NotFoundException("User not found ID: " + id));
+        return UserResponse.convert(user);
     }
 
     @Override
     @Transactional
     public UserResponse createUser(CreateUserRequest request) {
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new AlreadyTakenException("Пользователь с таким username уже существует");
-        }
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new AlreadyTakenException("Пользователь с таким email уже существует");
-        }
+        ensureUnique(request.getUsername(), request.getEmail());
 
-        UserEntity user = UserEntity.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .passwordHash(passwordEncoder.encode(request.getPassword()))
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .role(request.getRole())
-                .isActive(true)
-                .createdAt(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        UserEntity user = new UserEntity();
+        user.setUsername(request.getUsername());
+        user.setEmail(request.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
+        user.setRole(request.getRole());
+        user.setIsActive(true);
+        LocalDateTime now = LocalDateTime.now();
+        user.setCreatedAt(now);
+        user.setUpdatedAt(now);
 
         UserEntity saved = userRepository.save(user);
-        return mapToUserResponse(saved);
+        return UserResponse.convert(saved);
     }
 
     @Override
     @Transactional
     public UserResponse updateUser(UUID id, UpdateUserRequest request) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + id));
+                .orElseThrow(() -> new NotFoundException("User not found ID: " + id));
 
-        if (request.getUsername() != null && !request.getUsername().equals(user.getUsername())
-                && userRepository.existsByUsername(request.getUsername())) {
-            throw new AlreadyTakenException("Пользователь с таким username уже существует");
-        }
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())
-                && userRepository.existsByEmail(request.getEmail())) {
-            throw new AlreadyTakenException("Пользователь с таким email уже существует");
-        }
+        validateUniqueness(request, user);
 
-        user = UserEntity.builder()
-                .id(user.getId())
-                .username(request.getUsername() != null ? request.getUsername() : user.getUsername())
-                .email(request.getEmail() != null ? request.getEmail() : user.getEmail())
-                .passwordHash(user.getPasswordHash())
-                .firstName(request.getFirstName() != null ? request.getFirstName() : user.getFirstName())
-                .lastName(request.getLastName() != null ? request.getLastName() : user.getLastName())
-                .role(request.getRole() != null ? request.getRole() : user.getRole())
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
-                .cards(user.getCards())
-                .createdTransactions(user.getCreatedTransactions())
-                .build();
+        if (request.getUsername() != null) user.setUsername(request.getUsername());
+        if (request.getEmail()    != null) user.setEmail(request.getEmail());
+        if (request.getFirstName()!= null) user.setFirstName(request.getFirstName());
+        if (request.getLastName() != null) user.setLastName(request.getLastName());
+        if (request.getRole()     != null) user.setRole(request.getRole());
+        user.setUpdatedAt(LocalDateTime.now());
 
-        UserEntity updated = userRepository.save(user);
-        return mapToUserResponse(updated);
+        return UserResponse.convert(user);
     }
 
     @Override
     @Transactional
     public void deleteUser(UUID id) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + id));
+                .orElseThrow(() -> new NotFoundException("User not found ID: " + id));
         userRepository.delete(user);
     }
 
     @Override
     @Transactional
     public UserResponse activateUser(UUID id) {
-        return toggleUserStatus(id, true);
+        return setActiveStatus(id, true);
     }
 
     @Override
     @Transactional
     public UserResponse deactivateUser(UUID id) {
-        return toggleUserStatus(id, false);
+        return setActiveStatus(id, false);
     }
 
-    private UserResponse toggleUserStatus(UUID id, boolean isActive) {
+    private UserResponse setActiveStatus(UUID id, boolean active) {
         UserEntity user = userRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Пользователь не найден с ID: " + id));
-
-        user = UserEntity.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .passwordHash(user.getPasswordHash())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .role(user.getRole())
-                .isActive(isActive)
-                .createdAt(user.getCreatedAt())
-                .updatedAt(LocalDateTime.now())
-                .cards(user.getCards())
-                .createdTransactions(user.getCreatedTransactions())
-                .build();
-
-        UserEntity updated = userRepository.save(user);
-        return mapToUserResponse(updated);
+                .orElseThrow(() -> new NotFoundException("User not found ID: " + id));
+        user.setIsActive(active);
+        user.setUpdatedAt(LocalDateTime.now());
+        return UserResponse.convert(user);
     }
 
     @Override
@@ -157,12 +119,8 @@ public class UserServiceImpl implements UserService {
         Specification<UserEntity> spec = buildSpecification(search, role, active, createdAfter, createdBefore);
         Page<UserEntity> usersPage = userRepository.findAll(spec, pageable);
 
-        List<UserResponse> content = usersPage.getContent().stream()
-                .map(this::mapToUserResponse)
-                .collect(Collectors.toList());
-
         return PagedResponse.<UserResponse>builder()
-                .content(content)
+                .content(usersPage.map(UserResponse::convert).getContent())
                 .page(usersPage.getNumber())
                 .size(usersPage.getSize())
                 .totalElements(usersPage.getTotalElements())
@@ -205,18 +163,25 @@ public class UserServiceImpl implements UserService {
         };
     }
 
-    private UserResponse mapToUserResponse(UserEntity user) {
-        return UserResponse.builder()
-                .id(user.getId())
-                .username(user.getUsername())
-                .email(user.getEmail())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .role(user.getRole())
-                .isActive(user.getIsActive())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .cardsCount(user.getCards() != null ? user.getCards().size() : 0)
-                .build();
+    private void ensureUnique(String username, String email) {
+        if (userRepository.existsByUsername(username)) {
+            throw new AlreadyTakenException("Username is already taken");
+        }
+        if (userRepository.existsByEmail(email)) {
+            throw new AlreadyTakenException("Email is already exist");
+        }
+    }
+
+    private void validateUniqueness(UpdateUserRequest req, UserEntity existing) {
+        if (req.getUsername() != null
+                && !req.getUsername().equals(existing.getUsername())
+                && userRepository.existsByUsername(req.getUsername())) {
+            throw new AlreadyTakenException("Username is already taken");
+        }
+        if (req.getEmail() != null
+                && !req.getEmail().equals(existing.getEmail())
+                && userRepository.existsByEmail(req.getEmail())) {
+            throw new AlreadyTakenException("Email is already exist");
+        }
     }
 }

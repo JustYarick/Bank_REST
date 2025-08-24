@@ -15,7 +15,6 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +33,19 @@ import java.util.UUID;
 public class CardController {
 
     private final CardService cardService;
+
+    @GetMapping("/{cardId}")
+    @Operation(
+            summary = "Получить карту по ID",
+            description = "ADMIN может получить любую карту, USER — только свою карту"
+    )
+    @PreAuthorize("hasRole('ADMIN') or hasRole('USER')")
+    public ResponseEntity<CardResponse> getCardById(
+            @AuthenticationPrincipal UserPrincipal user,
+            @Parameter(description = "ID карты") @PathVariable UUID cardId
+    ) {
+        return ResponseEntity.ok(cardService.getCardByIdIfHaveAccess(cardId, user));
+    }
 
     @GetMapping
     @Operation(summary = "Получить все карты", description = "Фильтрация карт по статусу, балансу и времени создания с пагинацией и поиском")

@@ -15,27 +15,3 @@ databaseChangeLog:
             columns:
               - column:
                   name: status
-        - createIndex:
-            indexName: idx_transactions_from_card
-            tableName: transactions
-            columns:
-              - column:
-                  name: from_card_id
-        - createIndex:
-            indexName: idx_transactions_to_card
-            tableName: transactions
-            columns:
-              - column:
-                  name: to_card_id
-        - createIndex:
-            indexName: idx_transactions_created_by
-            tableName: transactions
-            columns:
-              - column:
-                  name: created_by
-        - createIndex:
-            indexName: idx_transactions_created_at
-            tableName: transactions
-            columns:
-              - column:
-                  name: created_at

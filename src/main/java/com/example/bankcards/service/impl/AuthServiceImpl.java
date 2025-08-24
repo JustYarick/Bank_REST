@@ -5,6 +5,7 @@ import com.example.bankcards.dto.auth.RegisterRequest;
 import com.example.bankcards.entity.UserEntity;
 import com.example.bankcards.entity.UserRole;
 import com.example.bankcards.exception.AlreadyTakenException;
+import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.UserRepository;
 import com.example.bankcards.security.UserPrincipal;
 import com.example.bankcards.service.interfaces.AuthService;
@@ -42,16 +43,20 @@ public class AuthServiceImpl implements AuthService {
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
+
+
+        UserEntity user = userRepository.findById(userPrincipal.getId())
+                .orElseThrow(() -> new NotFoundException("User not found"));
+
         return new AuthResponse(
                 jwt,
-                userPrincipal.getId(),
-                userPrincipal.getUsername(),
-                userPrincipal.getEmail(),
-                userRepository.findById(userPrincipal.getId()).get().getFirstName(),
-                userRepository.findById(userPrincipal.getId()).get().getLastName(),
-                UserRole.valueOf(userPrincipal.getAuthorities().iterator().next()
-                        .getAuthority().replace("ROLE_", ""))
-        );
+                user.getId(),
+                user.getUsername(),
+                user.getEmail(),
+                user.getFirstName(),
+                user.getLastName(),
+                user.getRole());
+
     }
 
     @Transactional

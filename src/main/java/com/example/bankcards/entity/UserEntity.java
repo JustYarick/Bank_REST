@@ -61,7 +61,4 @@ public class UserEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<CardEntity> cards = new ArrayList<>();
-
-    @OneToMany(mappedBy = "createdBy", fetch = FetchType.LAZY)
-    private List<TransactionEntity> createdTransactions = new ArrayList<>();
 }

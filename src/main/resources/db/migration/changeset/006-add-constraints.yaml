@@ -8,13 +8,3 @@ databaseChangeLog:
               ALTER TABLE cards 
               ADD CONSTRAINT chk_cards_balance 
               CHECK (balance >= 0);
-        - sql:
-            sql: >
-              ALTER TABLE transactions 
-              ADD CONSTRAINT chk_transactions_amount 
-              CHECK (amount > 0);
-        - sql:
-            sql: >
-              ALTER TABLE transactions 
-              ADD CONSTRAINT chk_transactions_different_cards 
-              CHECK (from_card_id != to_card_id);

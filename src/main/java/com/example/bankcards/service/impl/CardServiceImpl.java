@@ -7,9 +7,11 @@ import com.example.bankcards.dto.core.PagedResponse;
 import com.example.bankcards.entity.CardEntity;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.UserEntity;
+import com.example.bankcards.exception.NotAllowedException;
 import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
+import com.example.bankcards.security.UserPrincipal;
 import com.example.bankcards.service.interfaces.CardService;
 import com.example.bankcards.util.CardEncryption;
 import jakarta.persistence.criteria.Predicate;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -46,6 +49,23 @@ public class CardServiceImpl implements CardService {
     private final UserRepository userRepository;
     private final CardEncryption cardEncryption;
 
+    private static final String CARD_BIN = "427701";
+    private static final int CARD_NUMBER_LENGTH = 16;
+    private static final int CARD_VALIDITY_YEARS = 4;
+
+    @Override
+    public CardResponse getCardByIdIfHaveAccess(UUID cardId, UserPrincipal user){
+        CardEntity card = findCard(cardId);
+
+        if (user.getAuthorities().stream()
+                .anyMatch(
+                        auth -> "ROLE_USER".equals(auth.getAuthority())
+                ) && !card.getUser().getId().equals(user.getId())) {
+            throw new AccessDeniedException("Access denied to card: " + cardId);
+        }
+        return CardResponse.convert(card);
+    }
+
     @Override
     @Transactional
     public CreateCardResponse createCard(CreateCardRequest request) {
@@ -58,7 +78,7 @@ public class CardServiceImpl implements CardService {
                 .cardNumberEncrypted(cardEncryption.encryptCardNumber(cardNumber))
                 .cardNumberMask(createCardMask(cardNumber))
                 .holderName(request.getHolderName().toUpperCase())
-                .expirationDate(LocalDate.now().plusYears(4))
+                .expirationDate(LocalDate.now().plusYears(CARD_VALIDITY_YEARS))
                 .status(CardStatus.ACTIVE)
                 .balance(request.getInitialBalance())
                 .currencyCode(request.getCurrencyCode().toUpperCase())
@@ -211,8 +231,8 @@ public class CardServiceImpl implements CardService {
         SecureRandom random = new SecureRandom();
         String number;
         do {
-            StringBuilder sb = new StringBuilder("427701");
-            for (int i = 0; i < 10; i++) {
+            StringBuilder sb = new StringBuilder(CARD_BIN);
+            for (int i = 0; i < CARD_NUMBER_LENGTH - CARD_BIN.length(); i++) {
                 sb.append(random.nextInt(10));
             }
             number = sb.toString();

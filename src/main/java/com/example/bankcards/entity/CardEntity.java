@@ -62,10 +62,4 @@ public class CardEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
-
-    @OneToMany(mappedBy = "fromCard", fetch = FetchType.LAZY)
-    private List<TransactionEntity> outgoingTransactions = new ArrayList<>();
-
-    @OneToMany(mappedBy = "toCard", fetch = FetchType.LAZY)
-    private List<TransactionEntity> incomingTransactions = new ArrayList<>();
 }
