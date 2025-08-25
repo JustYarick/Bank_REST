@@ -26,6 +26,24 @@ services:
     ports:
       - "5432:5432"
 
+  bank-rest:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: bank_rest
+    restart: unless-stopped
+    depends_on:
+      - postgres
+    ports:
+      - "8080:8080"
+    environment:
+      DATABASE_URL: jdbc:postgresql://bank_card_postgres:5432/bank_cards
+      DATABASE_USERNAME: user
+      DATABASE_PASSWORD: password
+      JWT_SECRET: a3K8Bx2Qm9Rt5Yw7Ez4Ns6Vp1Hj0Lg8Df6Cb3Xz9We2Yu5Tr8Mn4Kp7Jh0Bg5Nf
+      JWT_EXPIRATION_TIME: 86400000
+      CARD_ENCRYPTION_KEY: SecureCardKey1234567890123456789
+
 
 volumes:
   postgres_data:

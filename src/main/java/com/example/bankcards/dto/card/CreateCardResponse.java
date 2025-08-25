@@ -24,18 +24,16 @@ public class CreateCardResponse {
     private LocalDate expirationDate;
     private CardStatus status;
     private BigDecimal balance;
-    private String currencyCode;
     private LocalDateTime createdAt;
 
-    public static CreateCardResponse convert(CardEntity card, String numder) {
+    public static CreateCardResponse convert(CardEntity card, String number) {
         return CreateCardResponse.builder()
                 .id(card.getId())
-                .cardNumber(numder)
+                .cardNumber(number)
                 .holderName(card.getHolderName())
                 .expirationDate(card.getExpirationDate())
                 .status(card.getStatus())
                 .balance(card.getBalance())
-                .currencyCode(card.getCurrencyCode())
                 .createdAt(card.getCreatedAt())
                 .build();
     }

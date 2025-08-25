@@ -24,7 +24,6 @@ public class CardResponse {
     private LocalDate expirationDate;
     private CardStatus status;
     private BigDecimal balance;
-    private String currencyCode;
     private LocalDateTime createdAt;
 
     public static CardResponse convert(CardEntity card) {
@@ -35,7 +34,6 @@ public class CardResponse {
                 .expirationDate(card.getExpirationDate())
                 .status(card.getStatus())
                 .balance(card.getBalance())
-                .currencyCode(card.getCurrencyCode())
                 .createdAt(card.getCreatedAt())
                 .build();
     }

@@ -2,9 +2,11 @@ package com.example.bankcards.dto.auth;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
+@AllArgsConstructor
 public class LoginRequest {
 
     @NotBlank(message = "Username is required")

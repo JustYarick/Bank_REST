@@ -373,11 +373,10 @@ components:
       enum: [ ACTIVE, BLOCKED, EXPIRED ]
     CreateCardRequest:
       type: object
-      required: [ cardUserUuid, holderName, currencyCode, initialBalance ]
+      required: [ cardUserUuid, holderName, initialBalance ]
       properties:
         cardUserUuid: { type: string, format: uuid }
         holderName: { type: string }
-        currencyCode: { type: string, example: RUB }
         initialBalance: { type: number, format: decimal }
     CreateCardResponse:
       type: object

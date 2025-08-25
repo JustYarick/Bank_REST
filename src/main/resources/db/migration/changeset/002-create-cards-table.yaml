@@ -57,12 +57,6 @@ databaseChangeLog:
                   constraints:
                     nullable: false
               - column:
-                  name: currency_code
-                  type: VARCHAR(3)
-                  defaultValue: 'RUB'
-                  constraints:
-                    nullable: false
-              - column:
                   name: user_id
                   type: UUID
                   constraints:

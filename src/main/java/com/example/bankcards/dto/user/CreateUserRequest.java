@@ -1,17 +1,20 @@
 package com.example.bankcards.dto.user;
 
+import com.example.bankcards.dto.auth.RegisterRequest;
 import com.example.bankcards.entity.UserRole;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class CreateUserRequest {
 
     @NotBlank(message = "Username is required")
@@ -37,4 +40,15 @@ public class CreateUserRequest {
 
     @NotNull(message = "Role is required")
     private UserRole role;
+
+    public static CreateUserRequest convertFromRegisterRequest(RegisterRequest request, UserRole role){
+        return CreateUserRequest.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .role(role)
+                .build();
+    }
 }

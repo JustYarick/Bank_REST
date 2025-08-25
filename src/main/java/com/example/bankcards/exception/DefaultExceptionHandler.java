@@ -2,13 +2,17 @@ package com.example.bankcards.exception;
 
 import jakarta.persistence.EntityNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.web.HttpMediaTypeNotAcceptableException;
+import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -17,6 +21,70 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
+
+    @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
+    public ResponseEntity<ApiError> handleUnsupportedMediaType(
+            HttpMediaTypeNotSupportedException e, HttpServletRequest request) {
+
+        String message = "Unsupported media type. Supported types: " +
+                e.getSupportedMediaTypes();
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        message,
+                        HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.UNSUPPORTED_MEDIA_TYPE
+        );
+    }
+
+    @ExceptionHandler(HttpMediaTypeNotAcceptableException.class)
+    public ResponseEntity<ApiError> handleMediaTypeNotAcceptable(
+            HttpMediaTypeNotAcceptableException e, HttpServletRequest request) {
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        "Not acceptable media type",
+                        HttpStatus.NOT_ACCEPTABLE.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.NOT_ACCEPTABLE
+        );
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(
+            MethodArgumentTypeMismatchException e, HttpServletRequest request) {
+
+        String message = String.format("Invalid parameter '%s': %s",
+                e.getName(), "Invalid format");
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        message,
+                        HttpStatus.BAD_REQUEST.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.BAD_REQUEST
+        );
+    }
+
+    @ExceptionHandler(ValidationException.class)
+    public ResponseEntity<ApiError> handleException(ValidationException e, HttpServletRequest request) {
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        e.getMessage(),
+                        HttpStatus.BAD_REQUEST.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.BAD_REQUEST
+        );
+    }
 
     @ExceptionHandler(EncryptionException.class)
     public ResponseEntity<ApiError> handleException(EncryptionException e, HttpServletRequest request) {

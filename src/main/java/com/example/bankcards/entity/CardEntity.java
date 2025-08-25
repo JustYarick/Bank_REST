@@ -40,13 +40,12 @@ public class CardEntity {
     @Column(name = "status", columnDefinition = "card_status_enum", nullable = false)
     @Enumerated(EnumType.STRING)
     @JdbcTypeCode(SqlTypes.NAMED_ENUM)
+    @Builder.Default
     private CardStatus status = CardStatus.ACTIVE;
 
     @Column(name = "balance", precision = 15, scale = 2, nullable = false)
+    @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
-
-    @Column(name = "currency_code", length = 3, nullable = false)
-    private String currencyCode = "RUB";
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

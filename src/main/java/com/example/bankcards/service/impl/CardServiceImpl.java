@@ -7,7 +7,6 @@ import com.example.bankcards.dto.core.PagedResponse;
 import com.example.bankcards.entity.CardEntity;
 import com.example.bankcards.entity.CardStatus;
 import com.example.bankcards.entity.UserEntity;
-import com.example.bankcards.exception.NotAllowedException;
 import com.example.bankcards.exception.NotFoundException;
 import com.example.bankcards.repository.CardRepository;
 import com.example.bankcards.repository.UserRepository;
@@ -17,7 +16,6 @@ import com.example.bankcards.util.CardEncryption;
 import jakarta.persistence.criteria.Predicate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -26,18 +24,13 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -81,7 +74,6 @@ public class CardServiceImpl implements CardService {
                 .expirationDate(LocalDate.now().plusYears(CARD_VALIDITY_YEARS))
                 .status(CardStatus.ACTIVE)
                 .balance(request.getInitialBalance())
-                .currencyCode(request.getCurrencyCode().toUpperCase())
                 .createdAt(LocalDateTime.now())
                 .user(user)
                 .build();
@@ -215,7 +207,7 @@ public class CardServiceImpl implements CardService {
     private PagedResponse<CardResponse> toPagedResponse(Page<CardEntity> page) {
         List<CardResponse> list = page.getContent().stream()
                 .map(CardResponse::convert)
-                .collect(Collectors.toList());
+                .toList();
         return PagedResponse.<CardResponse>builder()
                 .content(list)
                 .page(page.getNumber())
