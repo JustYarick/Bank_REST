@@ -7,6 +7,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.HttpMediaTypeNotAcceptableException;
 import org.springframework.web.HttpMediaTypeNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -21,6 +24,52 @@ import java.util.Map;
 @RestControllerAdvice
 @Slf4j
 public class DefaultExceptionHandler {
+
+    @ExceptionHandler(UsernameNotFoundException.class)
+    public ResponseEntity<ApiError> handleUsernameNotFound(
+            UsernameNotFoundException e, HttpServletRequest request) {
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        "Invalid username or password",
+                        HttpStatus.UNAUTHORIZED.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<ApiError> handleBadCredentials(
+            BadCredentialsException e, HttpServletRequest request) {
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        "Invalid username or password",
+                        HttpStatus.UNAUTHORIZED.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
+
+    @ExceptionHandler(AuthenticationException.class)
+    public ResponseEntity<ApiError> handleAuthenticationException(
+            AuthenticationException e, HttpServletRequest request) {
+
+        return new ResponseEntity<>(
+                new ApiError(
+                        request.getRequestURI(),
+                        "Authentication failed",
+                        HttpStatus.UNAUTHORIZED.value(),
+                        LocalDateTime.now()
+                ),
+                HttpStatus.UNAUTHORIZED
+        );
+    }
+
 
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiError> handleUnsupportedMediaType(
